@@ -48,6 +48,7 @@ void setup(void)
 void loop() {
   if(!MQTT.connected()){
     conectaMQTT();
+    rpc();
   }
  //enviaPacote();
   MQTT.loop();
@@ -159,8 +160,7 @@ void recebePacote(char* topic, byte* payload, unsigned int length)
     Serial.print(json);
 
     // Decode JSON request
-    const int capacity = JSON_OBJECT_SIZE(3) + 2*JSON_OBJECT_SIZE(1);
-    StaticJsonDocument<capacity> jsonBuffer;
+    StaticJsonDocument<256> jsonBuffer;
 
     DeserializationError err = deserializeJson(jsonBuffer, payload);
     if (err) {
@@ -168,51 +168,35 @@ void recebePacote(char* topic, byte* payload, unsigned int length)
       Serial.println(err.c_str());
     }
 
-    String nomeMetodo = String ((const char*)jsonBuffer["method"]);
+    String nomeMetodo = jsonBuffer["method"];
     Serial.println(" Nome do metodo: ");
     Serial.print(nomeMetodo);
 
-    if(nomeMetodo == "Rele1"){
-      Serial.println("Metodo acionar Rele1");
-    }
+    /*Possibilidades:
+      - 
+      - deserializeJson(jsonBuffer,parametros);
+      - StaticJsonDocument<250> dados;
+        deserializeJson(dados,jsonBuffer["params"])
+      - StaticJsonDocument<250> dados;
+        deserializeJson(dados,jsonBuffer["method"]["params"])
+      - deserializeJson(jsonBuffer,jsonBuffer["method"]["params"]);
+    */
+      
+
     String parametros = jsonBuffer["params"];
     Serial.println(" Parametros: ");
     Serial.print(parametros);
 
-    if(parametros == "HIGH"){
-      Serial.println("Acionar Rele HIGH");  
-    }
-    /*String pinReleTeste1 =  String ((const char*) jsonBuffer["method"]["params"]["pinRele"]);
-    Serial.println(" Teste 1 pinRele: ");
-    Serial.print(pinReleTeste1);
-
-    String pinReleTeste2 =  String ((const char*)jsonBuffer["params"]["pinRele"]);
-    Serial.println(" Teste 2 pinRele: ");
-    Serial.print(pinReleTeste2);*/
+    /*String param = jsonBuffer["params"][0];
+    Serial.println(" Parametros teste 1: ");
+    Serial.print(param);
     
-    /*Possibilidades:
-    1 - JsonBuffer["method"]["params"]["pinRele"];
-    2 - JsonBuffer["params"]["pinRele"];
-    */
+    String rele1 = jsonBuffer["params"][1];
+    Serial.println(" Parametros teste 1: ");
+    Serial.print(rele1);*/
 
-    
-    if(pinReleTeste1 == "HIGH"){
-      Serial.println("Acionar Rele 1 Ok");
-    }
-    if(pinReleTeste2 == "HIGH"){
-      Serial.println("Acionar Rele 2 Ok");
-    }
-    /*if(String((const char*)jsonBuffer["params"]["pinRele1"]) == "HIGH"){
-      Serial.println("Acionar Rele 1");  
-    }else if(jsonBuffer["params"]["pinRele1"]== "LOW"){
-      Serial.println("Desligar Rele 1");  
-    }
+ 
 
-    if(String((const char*)jsonBuffer["params"]["pinRele2"]) == "HIGH"){
-      Serial.println("Acionar Rele 2");  
-    }else if(jsonBuffer["params"]["pinRele2"]== "LOW"){
-      Serial.println("Desligar Rele 2");  
-    }*/
     //String msg;
 
     //obtem a string do payload recebido
@@ -223,12 +207,5 @@ void recebePacote(char* topic, byte* payload, unsigned int length)
     //}
 
     //Serial.println(msg);
-    /*
-    if (msg == "0") {
-       digitalWrite(pinLED1, LOW);
-    }
-
-    if (msg == "1") {
-       digitalWrite(pinLED1, HIGH);
-    }*/
+    
 }
